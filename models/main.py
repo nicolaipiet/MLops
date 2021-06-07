@@ -1,11 +1,17 @@
 import sys
 import argparse
+import os
 
 import torch
+import numpy as np
+import matplotlib.pyplot as plt
 
-from data import mnist
-from model import model1
+from model import MyAwesomeModel
 from torch import nn, optim
+
+print(os.getcwd())
+
+from src.data.make_dataset import mnist
 
 class TrainOREvaluate(object):
     """ Helper class that will help launch class methods as commands
@@ -35,18 +41,18 @@ class TrainOREvaluate(object):
         parser.add_argument('--lr', default=0.1)
         # add any additional argument that you want
         parser.add_argument('--epoch', default = 10)
+        parser.add_argument('--model_version', default = 00)
 
         args = parser.parse_args(sys.argv[2:])
         print(args)
         print('device: ', self.device)
-        model = model1().to(self.device)
+        model = MyAwesomeModel().to(self.device)
 
         criterion = nn.NLLLoss()
         optimizer = optim.Adam(model.parameters(), lr=0.003)    
         
-        # TODO: Implement training loop here
-
-        trainloader, _ = mnist()
+        trainset, _ = mnist()
+        trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True)
         train_losses = []
 
         for e in range(int(args.epoch)):
@@ -68,10 +74,15 @@ class TrainOREvaluate(object):
             train_losses.append(running_loss)
             print("Train loss:", train_losses[-1].item())
 
-        checkpoint = {'hidden_layers': [each.out_features for each in model.hidden_layers],
-              'state_dict': model.state_dict()}
 
-        torch.save(checkpoint, 'checkpoint.pth')
+        torch.save(model.state_dict(), 'models/trained_models/' + str(args.model_version) +'_checkpoint.pth')
+
+        fig = plt.figure()
+        x = np.arange(int(args.epoch))
+        plt.plot(x,train_losses,label = 'Train loss')
+        plt.legend(loc='upper right')
+        plt.savefig('reports/figures/train_loss.png')
+
 
         return train_losses
 
@@ -83,11 +94,17 @@ class TrainOREvaluate(object):
         # add any additional argument that you want
         args = parser.parse_args(sys.argv[2:])
         print(args)
+
         
-        # TODO: Implement evaluation logic here
         if args.load_model_from:
-            model = torch.load(args.load_model_from)
-        _, test_set = mnist()
+            state_dict = torch.load(args.load_model_from)
+
+        model = MyAwesomeModel().to(self.device)
+        model.load_state_dict(state_dict)
+
+
+        _, testset = mnist()
+        testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=False)
 
         with torch.no_grad():
         # validation pass here
@@ -96,22 +113,17 @@ class TrainOREvaluate(object):
             model.eval()
             for images, labels in testloader:
 
-                log_ps = model(images)
+                log_ps = model(images.to(self.device))
                 ps = torch.exp(log_ps)
                 top_p, top_class = ps.topk(1, dim=1)
                 
-                equals = top_class == labels.view(*top_class.shape)
+                equals = top_class == labels.view(*top_class.shape).to(self.device)
                 accuracy += torch.mean(equals.type(torch.FloatTensor))
 
-                running_loss += loss
+            accuracy = accuracy/len(testloader)
+            print('Accuracy: ', accuracy.item())
 
-            val_losses = running_loss
-            accuracy = torch.mean(accuracy)
-
-            print('Val loss: ', val_losses)
-            print('Accuracy: ', accuracy)
-
-            return val_losses, accuracy
+            return accuracy
 
 
 
