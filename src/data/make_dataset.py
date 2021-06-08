@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import click
 import logging
+import os
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 from torchvision import datasets, transforms
 
-data_dir = '../../data'
+data_dir = '~/data'
 
 #@click.command()
 #@click.argument('input_filepath', type=click.Path(exists=True))
@@ -31,6 +32,8 @@ def main():
 
 
 def mnist():
+    print(os.getcwd(), data_dir)
+
     transform = transforms.Compose([transforms.ToTensor(),
                                     transforms.Normalize((0.5,), (0.5,))])
 

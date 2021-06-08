@@ -74,11 +74,11 @@ class TrainOREvaluate(object):
                 optimizer.step()
 
                 running_loss += loss
-                log_ps_lst.append(log_ps)
+                log_ps_lst.append(log_ps.flatten())
             train_losses.append(running_loss)
             
             self.writer.add_scalar('loss/train',running_loss, e)
-            self.writer.add_histogram('Class probability distribution', torch.stack(log_ps_lst), e)
+            self.writer.add_histogram('Class probability distribution', torch.cat(log_ps_lst), e)
 
             print("Train loss:", train_losses[-1].item())
         
