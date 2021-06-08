@@ -1,0 +1,32 @@
+{
+    "os": "Windows-10-10.0.19041-SP0",
+    "python": "3.8.8",
+    "heartbeatAt": "2021-06-08T12:35:41.562150",
+    "startedAt": "2021-06-08T12:35:40.288994",
+    "docker": null,
+    "gpu": "NVIDIA GeForce RTX 3070",
+    "gpu_count": 1,
+    "cpu_count": 12,
+    "cuda": null,
+    "args": [
+        "train",
+        "--epoch",
+        "50",
+        "--lr",
+        "0.003",
+        "--model_version",
+        "2"
+    ],
+    "state": "running",
+    "program": "models/main.py",
+    "codePath": "models\\main.py",
+    "git": {
+        "remote": "https://github.com/nicolaipiet/MLops.git",
+        "commit": "c121700fca7581c9f823143d69e44147a3af5308"
+    },
+    "email": "s170589@student.dtu.dk",
+    "root": "C:/Users/nicol/Google Drev/DTU/MMC/MLops/MLops",
+    "host": "DESKTOP-V42IOJ4",
+    "username": "nicol",
+    "executable": "C:\\ProgramData\\Anaconda3\\python.exe"
+}
