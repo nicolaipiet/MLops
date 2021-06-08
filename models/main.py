@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 from model import MyAwesomeModel
 from torch import nn, optim
+from torch.utils.tensorboard import SummaryWriter
 
 print(os.getcwd())
 
@@ -19,6 +20,8 @@ class TrainOREvaluate(object):
     """
     def __init__(self):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')      
+        self.writer = SummaryWriter()
+
         parser = argparse.ArgumentParser(
             description="Script for either training or evaluating",
             usage="python main.py <command>"
@@ -58,6 +61,7 @@ class TrainOREvaluate(object):
         for e in range(int(args.epoch)):
             print('Epoch: ', e)
             running_loss = 0
+            log_ps_lst = []
             for images, labels in trainloader:
                 model.train()
                 images = images.to(self.device)
@@ -70,10 +74,15 @@ class TrainOREvaluate(object):
                 optimizer.step()
 
                 running_loss += loss
-
+                log_ps_lst.append(log_ps)
             train_losses.append(running_loss)
-            print("Train loss:", train_losses[-1].item())
+            
+            self.writer.add_scalar('loss/train',running_loss, e)
+            self.writer.add_histogram('Class probability distribution', torch.stack(log_ps_lst), e)
 
+            print("Train loss:", train_losses[-1].item())
+        
+        self.writer.close()
 
         torch.save(model.state_dict(), 'models/trained_models/' + str(args.model_version) +'_checkpoint.pth')
 
